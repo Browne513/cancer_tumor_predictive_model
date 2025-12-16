@@ -1,0 +1,53 @@
+# IN400M5 Artificial Intelligence and Machine Learning Case Studies
+# Eric S. Brown
+
+# Import Libraries
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+# Load
+data = load_breast_cancer()
+df = pd.DataFrame(data.data, columns=data.feature_names)
+df['target'] = data.target
+
+print(df.head())
+print(df['target'].value_counts())
+
+# Split the Data
+X = df.drop('target', axis=1)
+y = df['target']
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42
+)
+
+# Train Random Forest Model
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+
+# Evaluate
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
+print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
+
+# Save results
+with open("output.txt", "w") as f:
+    f.write("Accuracy: " + str(accuracy_score(y_test, y_pred)) + "\n")
+    f.write("Classification Report:\n" + classification_report(y_test, y_pred))
+    f.write("Confusion Matrix:\n" + str(confusion_matrix(y_test, y_pred)))
+
+# Plot Confusion Matrix
+sns.heatmap(confusion_matrix(y_test, y_pred), annot=True, fmt="d",
+            xticklabels=data.target_names, yticklabels=data.target_names, cmap="Blues")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.title("Confusion Matrix")
+plt.savefig("confusion_matrix.png")
+plt.close()
